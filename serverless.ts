@@ -1,7 +1,9 @@
 import type { AWS } from '@serverless/typescript';
 
-import hello from '@functions/hello';
+import auth from '@functions/auth';
 import getTodos from '@functions/todos/get';
+import createTodo from '@functions/todos/create';
+import updateTodo from '@functions/todos/update';
 
 const stage = "${opt:stage, 'dev'}";
 const region = 'us-east-1';
@@ -36,7 +38,7 @@ const serverlessConfiguration: AWS = {
         statements: [
           {
             Effect: 'Allow',
-            Action: ['dynamodb:Scan'],
+            Action: ['dynamodb:Scan', 'dynamodb:GetItem', 'dynamodb:Query'],
             Resource:
               'arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}',
           },
@@ -51,7 +53,7 @@ const serverlessConfiguration: AWS = {
     },
   },
   // import the function via paths
-  functions: { hello, getTodos },
+  functions: { auth, getTodos, createTodo, updateTodo },
   resources: {
     Resources: {
       TodosDynamoDBTable: {
