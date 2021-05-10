@@ -3,8 +3,11 @@ import type { AWS } from '@serverless/typescript';
 import hello from '@functions/hello';
 import getTodos from '@functions/todos/get';
 
+const stage = "${opt:stage, 'dev'}";
+const region = 'us-east-1';
+
 const serverlessConfiguration: AWS = {
-  service: 'aws-serverless-todo-ts',
+  service: 'aws-sls-todo-ts',
   frameworkVersion: '2',
   custom: {
     webpack: {
@@ -20,13 +23,62 @@ const serverlessConfiguration: AWS = {
       minimumCompressionSize: 1024,
       shouldStartNameWithService: true,
     },
+    stage,
+    region,
     environment: {
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1',
+      TODOS_TABLE: 'Todos-${self:service}-${self:provider.stage}',
+      USER_ID_INDEX: 'UserIndex',
     },
     lambdaHashingVersion: '20201221',
+    iam: {
+      role: {
+        statements: [
+          {
+            Effect: 'Allow',
+            Action: ['dynamodb:Scan'],
+            Resource:
+              'arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}',
+          },
+          {
+            Effect: 'Allow',
+            Action: 'dynamodb:Query',
+            Resource:
+              'arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}/index/${self:provider.environment.USER_ID_INDEX}',
+          },
+        ],
+      },
+    },
   },
   // import the function via paths
   functions: { hello, getTodos },
+  resources: {
+    Resources: {
+      TodosDynamoDBTable: {
+        Type: 'AWS::DynamoDB::Table',
+        Properties: {
+          AttributeDefinitions: [
+            { AttributeName: 'todoId', AttributeType: 'S' },
+            { AttributeName: 'createdAt', AttributeType: 'S' },
+            { AttributeName: 'userId', AttributeType: 'S' },
+          ],
+          KeySchema: [
+            { AttributeName: 'todoId', KeyType: 'HASH' },
+            { AttributeName: 'createdAt', KeyType: 'RANGE' },
+          ],
+          GlobalSecondaryIndexes: [
+            {
+              IndexName: '${self:provider.environment.USER_ID_INDEX}',
+              KeySchema: [{ AttributeName: 'userId', KeyType: 'HASH' }],
+              Projection: { ProjectionType: 'ALL' },
+            },
+          ],
+          BillingMode: 'PAY_PER_REQUEST',
+          TableName: '${self:provider.environment.TODOS_TABLE}',
+        },
+      },
+    },
+  },
 };
 
 module.exports = serverlessConfiguration;
