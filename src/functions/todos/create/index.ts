@@ -9,6 +9,7 @@ export default {
         method: 'post',
         path: 'todos',
         authorizer: 'auth',
+        cors: true,
         request: {
           schema: {
             'application/json': schema,
