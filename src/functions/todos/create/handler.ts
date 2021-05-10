@@ -7,22 +7,26 @@ import type {
 } from 'aws-lambda';
 import { formatJSONResponse } from '@libs/apiGateway';
 import * as AWS from 'aws-sdk';
+import uuid from 'uuid';
 import { middyfy } from '@libs/lambda';
-import { getTodos } from '../../../businessLogic/todos';
+import { CreateTodoRequest } from '../../../requests/CreateTodoRequest';
+import { createTodo } from '../../../businessLogic/todos';
 
 const todosTable = process.env.TODOS_TABLE;
 const docClient = new AWS.DynamoDB.DocumentClient();
 
-const getUserTodos: APIGatewayProxyHandler = async (
+const createTodoHandler: APIGatewayProxyHandler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
-  const items = await getTodos(event);
+  const newTodo: CreateTodoRequest = JSON.parse(event.body);
+  const newItem = await createTodo(newTodo, event);
+
   return formatJSONResponse({
-    statusCode: 200,
+    statusCode: 201,
     body: {
-      items,
+      newItem,
     },
   });
 };
 
-export const main = middyfy(getUserTodos);
+export const main = middyfy(createTodoHandler);

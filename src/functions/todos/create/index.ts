@@ -1,3 +1,4 @@
+import schema from './schema';
 import { handlerPath } from '@libs/handlerResolver';
 
 export default {
@@ -5,9 +6,14 @@ export default {
   events: [
     {
       http: {
-        method: 'get',
+        method: 'post',
         path: 'todos',
         authorizer: 'auth',
+        request: {
+          schema: {
+            'application/json': schema,
+          },
+        },
       },
     },
   ],
