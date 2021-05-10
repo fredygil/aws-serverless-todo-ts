@@ -17,12 +17,7 @@ const getUserTodos: APIGatewayProxyHandler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
   const items = await getTodos(event);
-  return formatJSONResponse({
-    statusCode: 200,
-    body: {
-      items,
-    },
-  });
+  return formatJSONResponse({ body: { items } });
 };
 
 export const main = middyfy(getUserTodos);
