@@ -31,6 +31,10 @@ const serverlessConfiguration: AWS = {
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1',
       TODOS_TABLE: 'Todos-${self:service}-${self:provider.stage}',
       USER_ID_INDEX: 'UserIndex',
+      AUTH_0_TOKEN_ISSUER: 'https://dev-caieyu5z.us.auth0.com',
+      AUTH_0_JWKS_URL:
+        'https://dev-caieyu5z.us.auth0.com/.well-known/jwks.json',
+      AUTH_0_AUDIENCE: 'http://localhost:3000',
     },
     lambdaHashingVersion: '20201221',
     iam: {
