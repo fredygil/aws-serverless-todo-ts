@@ -90,6 +90,25 @@ export class TodoAccess {
     return todo;
   }
 
+  async deleteTodo(todoId: string, userId: string): Promise<Todo> {
+    const userTodo = await this.getUserTodo(todoId, userId);
+    if (!userTodo) throw new Error('Todo does not exists or not authorized');
+
+    // Delete
+    const deleteItem = {
+      TableName: this.todosTable,
+      Key: {
+        todoId,
+        createdAt: userTodo.createdAt,
+      },
+    };
+    console.log('Delete info: ', deleteItem);
+    await this.docClient.delete(deleteItem).promise();
+    console.log(`Todo ${todoId} deleted`);
+
+    return;
+  }
+
   // Check if todo exists and belongs to the user
   async getUserTodo(todoId: string, userId: string): Promise<Todo> {
     console.info(`Getting todo id ${todoId} for user ${userId}`);
