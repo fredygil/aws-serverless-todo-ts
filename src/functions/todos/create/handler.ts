@@ -1,32 +1,32 @@
 import 'source-map-support/register';
 
-import type {
-  APIGatewayProxyHandler,
-  APIGatewayProxyEvent,
-  APIGatewayProxyResult,
-} from 'aws-lambda';
-import { formatJSONResponse } from '@libs/apiGateway';
-import * as AWS from 'aws-sdk';
-import uuid from 'uuid';
+import {
+  formatJSONResponse,
+  ValidatedEventAPIGatewayProxyEvent,
+} from '@libs/apiGateway';
+
+import { getUserId } from '@libs/utils';
 import { middyfy } from '@libs/lambda';
 import { CreateTodoRequest } from '../../../requests/CreateTodoRequest';
 import { createTodo } from '../../../businessLogic/todos';
 
-const todosTable = process.env.TODOS_TABLE;
-const docClient = new AWS.DynamoDB.DocumentClient();
+import schema from './schema';
 
-const createTodoHandler: APIGatewayProxyHandler = async (
-  event: APIGatewayProxyEvent
-): Promise<APIGatewayProxyResult> => {
-  const newTodo: CreateTodoRequest = JSON.parse(event.body);
-  const newItem = await createTodo(newTodo, event);
+const createTodoHandler: ValidatedEventAPIGatewayProxyEvent<typeof schema> =
+  async (event) => {
+    const userId = getUserId(event.headers.Authorization);
+    const newTodo: CreateTodoRequest = {
+      name: event.body.name,
+      dueDate: event.body.dueDate,
+    };
+    const item = await createTodo(newTodo, userId);
 
-  return formatJSONResponse({
-    statusCode: 201,
-    body: {
-      newItem,
-    },
-  });
-};
+    return formatJSONResponse({
+      statusCode: 201,
+      body: {
+        item,
+      },
+    });
+  };
 
 export const main = middyfy(createTodoHandler);

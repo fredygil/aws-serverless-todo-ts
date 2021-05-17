@@ -16,6 +16,7 @@ export const main = async (
 
   try {
     const data = await JwtAuth.authenticate(event);
+    logger.info('User authorized');
     return data;
   } catch (e) {
     logger.error('User not authorized', { error: e.message });

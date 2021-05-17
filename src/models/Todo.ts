@@ -2,8 +2,8 @@ export interface Todo {
   todoId: string;
   userId: string;
   name: string;
-  createdAt: string;
+  createdAt?: string;
   dueDate: string;
   done: boolean;
-  attachmentUrl: string;
+  attachmentUrl?: string;
 }
