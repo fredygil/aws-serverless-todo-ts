@@ -50,3 +50,13 @@ export async function updateTodo(
     ...updateTodoRequest,
   });
 }
+
+export async function deleteTodo(
+  todoId: string,
+  userId: string
+): Promise<Object> {
+  console.log(`Delete todo id: ${todoId}`);
+  console.log(`Delete todo userId: ${userId}`);
+
+  return await todoAccess.deleteTodo(todoId, userId);
+}

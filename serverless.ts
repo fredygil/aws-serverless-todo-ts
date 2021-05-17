@@ -4,6 +4,7 @@ import auth from '@functions/auth';
 import getTodos from '@functions/todos/get';
 import createTodo from '@functions/todos/create';
 import updateTodo from '@functions/todos/update';
+import deleteTodo from '@functions/todos/delete';
 
 const stage = "${opt:stage, 'dev'}";
 const region = 'us-east-1';
@@ -47,6 +48,7 @@ const serverlessConfiguration: AWS = {
               'dynamodb:GetItem',
               'dynamodb:PutItem',
               'dynamodb:UpdateItem',
+              'dynamodb:DeleteItem',
               'dynamodb:Query',
             ],
             Resource:
@@ -63,7 +65,7 @@ const serverlessConfiguration: AWS = {
     },
   },
   // import the function via paths
-  functions: { auth, getTodos, createTodo, updateTodo },
+  functions: { auth, getTodos, createTodo, updateTodo, deleteTodo },
   resources: {
     Resources: {
       TodosDynamoDBTable: {
