@@ -56,6 +56,48 @@ export class TodoAccess {
 
     return todo;
   }
+
+  async updateTodo(todo: Todo): Promise<Todo> {
+    const { todoId, userId, name, dueDate, done } = todo;
+
+    if (!this.userTodoExists(todoId, userId))
+      throw new Error('Todo does not exists or not authorized');
+
+    // Update
+    const updateItem = {
+      TableName: this.todosTable,
+      Key: {
+        todoId,
+      },
+      ExpressionAttributeNames: {
+        '#todo_name': 'name',
+      },
+      ExpressionAttributeValues: {
+        ':name': name,
+        ...(dueDate ? { ':dueDate': dueDate } : {}),
+        ...(done ? { ':done': done } : {}),
+      },
+      UpdateExpression: `SET #todo_name = :name ${
+        dueDate ? ', dueDate = :dueDate' : ''
+      } ${done ? ', done = :done' : ''}`,
+      ReturnValues: 'ALL_NEW',
+    };
+    console.log('Update info: ', updateItem);
+    await this.docClient.update(updateItem).promise();
+
+    return todo;
+  }
+
+  // Check if todo exists and belongs to the user
+  async userTodoExists(todoId: string, userId: string): Promise<boolean> {
+    const result = await this.docClient
+      .get({
+        TableName: this.todosTable,
+        Key: { todoId },
+      })
+      .promise();
+    return !!result.Item && result?.Item?.userId === userId;
+  }
 }
 
 function createDynamoDBClient() {

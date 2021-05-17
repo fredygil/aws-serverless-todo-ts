@@ -42,7 +42,12 @@ const serverlessConfiguration: AWS = {
         statements: [
           {
             Effect: 'Allow',
-            Action: ['dynamodb:Scan', 'dynamodb:GetItem', 'dynamodb:Query'],
+            Action: [
+              'dynamodb:Scan',
+              'dynamodb:GetItem',
+              'dynamodb:PutItem',
+              'dynamodb:Query',
+            ],
             Resource:
               'arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}',
           },

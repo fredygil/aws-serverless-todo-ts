@@ -6,17 +6,15 @@ import type {
   APIGatewayProxyResult,
 } from 'aws-lambda';
 import { formatJSONResponse } from '@libs/apiGateway';
-import * as AWS from 'aws-sdk';
 import { middyfy } from '@libs/lambda';
 import { getTodos } from '../../../businessLogic/todos';
-
-const todosTable = process.env.TODOS_TABLE;
-const docClient = new AWS.DynamoDB.DocumentClient();
+import { getUserId } from '@libs/utils';
 
 const getUserTodos: APIGatewayProxyHandler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
-  const items = await getTodos(event);
+  const userId = getUserId(event.headers.Authorization);
+  const items = await getTodos(userId);
   return formatJSONResponse({ body: { items } });
 };
 

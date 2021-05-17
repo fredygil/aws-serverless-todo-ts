@@ -1,9 +1,11 @@
 import * as uuid from 'uuid';
 
 import { APIGatewayProxyEvent } from 'aws-lambda';
+import { ValidatedEventAPIGatewayProxyEvent } from '@libs/apiGateway';
 import { Todo } from '../models/Todo';
 import { TodoAccess } from '../dataLayer/todosAccess';
 import { CreateTodoRequest } from '../requests/CreateTodoRequest';
+import { UpdateTodoRequest } from '../requests/UpdateTodoRequest';
 import { getUserId } from '../libs/utils';
 
 const todoAccess = new TodoAccess();
@@ -12,17 +14,15 @@ export async function getAllTodos(): Promise<Todo[]> {
   return todoAccess.getAllTodos();
 }
 
-export async function getTodos(event: APIGatewayProxyEvent): Promise<Todo[]> {
-  const userId = getUserId(event);
+export async function getTodos(userId: string): Promise<Todo[]> {
   return todoAccess.getTodos(userId);
 }
 
 export async function createTodo(
   createTodoRequest: CreateTodoRequest,
-  event: APIGatewayProxyEvent
+  userId: string
 ): Promise<Todo> {
   const todoId = uuid.v4();
-  const userId = getUserId(event);
 
   return await todoAccess.createTodo({
     todoId: todoId,
@@ -32,5 +32,26 @@ export async function createTodo(
     createdAt: new Date().toISOString(),
     done: false,
     attachmentUrl: null,
+  });
+}
+
+export async function updateTodo(
+  todoId: string,
+  updateTodoRequest: UpdateTodoRequest,
+  event: APIGatewayProxyEvent
+): Promise<Object> {
+  const { name, dueDate, done } = updateTodoRequest;
+  const userId = getUserId(event);
+
+  console.log(`Update todo id: ${todoId}`);
+  console.log(`Update todo userId: ${userId}`);
+  console.log(`Update todo data: `, updateTodoRequest);
+
+  return await todoAccess.updateTodo({
+    todoId,
+    userId,
+    name,
+    dueDate,
+    done,
   });
 }

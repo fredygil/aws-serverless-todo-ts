@@ -8,6 +8,8 @@ export default {
       http: {
         method: 'patch',
         path: 'todos/{todoId}',
+        cors: true,
+        authorizer: 'auth',
         request: {
           schema: {
             'application/json': schema,
