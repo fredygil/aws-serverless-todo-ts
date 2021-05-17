@@ -36,13 +36,10 @@ export async function createTodo(
 }
 
 export async function updateTodo(
-  todoId: string,
   updateTodoRequest: UpdateTodoRequest,
-  event: APIGatewayProxyEvent
+  todoId: string,
+  userId: string
 ): Promise<Object> {
-  const { name, dueDate, done } = updateTodoRequest;
-  const userId = getUserId(event);
-
   console.log(`Update todo id: ${todoId}`);
   console.log(`Update todo userId: ${userId}`);
   console.log(`Update todo data: `, updateTodoRequest);
@@ -50,8 +47,6 @@ export async function updateTodo(
   return await todoAccess.updateTodo({
     todoId,
     userId,
-    name,
-    dueDate,
-    done,
+    ...updateTodoRequest,
   });
 }

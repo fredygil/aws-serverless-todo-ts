@@ -60,14 +60,15 @@ export class TodoAccess {
   async updateTodo(todo: Todo): Promise<Todo> {
     const { todoId, userId, name, dueDate, done } = todo;
 
-    if (!this.userTodoExists(todoId, userId))
-      throw new Error('Todo does not exists or not authorized');
+    const userTodo = await this.getUserTodo(todoId, userId);
+    if (!userTodo) throw new Error('Todo does not exists or not authorized');
 
     // Update
     const updateItem = {
       TableName: this.todosTable,
       Key: {
         todoId,
+        createdAt: userTodo.createdAt,
       },
       ExpressionAttributeNames: {
         '#todo_name': 'name',
@@ -84,19 +85,30 @@ export class TodoAccess {
     };
     console.log('Update info: ', updateItem);
     await this.docClient.update(updateItem).promise();
+    console.log(`Todo ${todoId} updated`);
 
     return todo;
   }
 
   // Check if todo exists and belongs to the user
-  async userTodoExists(todoId: string, userId: string): Promise<boolean> {
+  async getUserTodo(todoId: string, userId: string): Promise<Todo> {
+    console.info(`Getting todo id ${todoId} for user ${userId}`);
     const result = await this.docClient
-      .get({
+      .query({
         TableName: this.todosTable,
-        Key: { todoId },
+        KeyConditionExpression: 'todoId = :todoId',
+        ExpressionAttributeValues: {
+          ':todoId': todoId,
+        },
       })
       .promise();
-    return !!result.Item && result?.Item?.userId === userId;
+    if (result.Items.length > 0) {
+      const item = result.Items[0];
+      console.info('Get todo for user result: ', result);
+      return (item.userId === userId ? item : null) as Todo;
+    }
+    console.info(`Todo ${todoId} does not exist`);
+    return null;
   }
 }
 
