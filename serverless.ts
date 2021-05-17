@@ -46,6 +46,7 @@ const serverlessConfiguration: AWS = {
               'dynamodb:Scan',
               'dynamodb:GetItem',
               'dynamodb:PutItem',
+              'dynamodb:UpdateItem',
               'dynamodb:Query',
             ],
             Resource:
